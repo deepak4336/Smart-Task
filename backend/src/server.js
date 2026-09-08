@@ -7,6 +7,7 @@ import workspaceRoutes from './routes/workspaces.js';
 import boardRoutes from './routes/boards.js';
 import taskRoutes from './routes/tasks.js';
 import ticketRoutes from './routes/tickets.js';
+import reportRoutes from './routes/reports.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/reports', reportRoutes);
 // app.use('/api/dependencies', dependencyRoutes);
 // app.use('/api/extract-tasks', extractRoutes);
 
