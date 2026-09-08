@@ -10,6 +10,7 @@ import KanbanBoard from './features/tasks/KanbanBoard';
 import TasksHome from './features/tasks/TasksHome';
 import ProfilePage from './features/profile/ProfilePage';
 import ComingSoon from './features/placeholders/ComingSoon';
+import TicketsPage from './features/tickets/TicketsPage';
 import AppShell from './components/AppShell';
 
 function AuthenticatedShell() {
@@ -38,7 +39,7 @@ export default function App() {
             <Route path="/workspaces/:workspaceId" element={<WorkspaceDetail />} />
             <Route path="/tasks" element={<TasksHome />} />
             <Route path="/boards/:boardId" element={<KanbanBoard />} />
-            <Route path="/tickets" element={<ComingSoon title="Tickets" />} />
+            <Route path="/tickets" element={<TicketsPage />} />
             <Route path="/reports" element={<ComingSoon title="Reports" />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
