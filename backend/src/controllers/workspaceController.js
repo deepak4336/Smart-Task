@@ -80,3 +80,74 @@ export async function inviteMember(req, res) {
 
   res.status(201).json({ message: 'Member added' });
 }
+
+async function assertWorkspaceMember(userId, workspaceId) {
+  const { data: membership } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .single();
+
+  if (!membership) return null;
+  return membership;
+}
+
+export async function listMembers(req, res) {
+  const { workspaceId } = req.params;
+
+  const membership = await assertWorkspaceMember(req.user.id, workspaceId);
+  if (!membership) {
+    return res.status(403).json({ error: 'Not a member of this workspace' });
+  }
+
+  const { data: members, error } = await supabase
+    .from('workspace_members')
+    .select('id, role, joined_at, user:users!user_id(id, name, email)')
+    .eq('workspace_id', workspaceId)
+    .order('joined_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ members });
+}
+
+export async function listProjects(req, res) {
+  const { workspaceId } = req.params;
+
+  const membership = await assertWorkspaceMember(req.user.id, workspaceId);
+  if (!membership) {
+    return res.status(403).json({ error: 'Not a member of this workspace' });
+  }
+
+  const { data: projects, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('workspace_id', workspaceId)
+    .order('created_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ projects });
+}
+
+export async function createProject(req, res) {
+  const { workspaceId } = req.params;
+  const { name } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Project name is required' });
+  }
+
+  const membership = await assertWorkspaceMember(req.user.id, workspaceId);
+  if (!membership) {
+    return res.status(403).json({ error: 'Not a member of this workspace' });
+  }
+
+  const { data: project, error } = await supabase
+    .from('projects')
+    .insert({ workspace_id: workspaceId, name: name.trim() })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json({ project });
+}
