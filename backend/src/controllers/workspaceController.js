@@ -3,7 +3,7 @@ import { supabase } from '../config/supabaseClient.js';
 export async function listWorkspaces(req, res) {
   const { data: memberships, error: memErr } = await supabase
     .from('workspace_members')
-    .select('workspace_id')
+    .select('workspace_id, role')
     .eq('user_id', req.user.id);
 
   if (memErr) return res.status(500).json({ error: memErr.message });
@@ -11,13 +11,22 @@ export async function listWorkspaces(req, res) {
   const workspaceIds = memberships.map((m) => m.workspace_id);
   if (workspaceIds.length === 0) return res.json({ workspaces: [] });
 
+  const roleByWorkspace = Object.fromEntries(
+    memberships.map((m) => [m.workspace_id, m.role])
+  );
+
   const { data: workspaces, error } = await supabase
     .from('workspaces')
     .select('*')
     .in('id', workspaceIds);
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ workspaces });
+  res.json({
+    workspaces: workspaces.map((ws) => ({
+      ...ws,
+      role: roleByWorkspace[ws.id] || 'member',
+    })),
+  });
 }
 
 export async function createWorkspace(req, res) {

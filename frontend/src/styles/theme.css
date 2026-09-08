@@ -258,7 +258,159 @@ a {
   font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+
+.page-lead {
+  color: var(--muted);
+  font-size: 14px;
   margin: 0 0 24px;
+}
+
+/* ============================================================
+   Sidebar app shell
+   ============================================================ */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.app-shell-mobilebar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.app-sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px 16px;
+}
+
+.app-sidebar-brand {
+  margin: 0 8px 28px;
+}
+
+.app-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.app-nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.app-nav-link:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.app-nav-link.is-active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.app-sidebar-footer {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.app-sidebar-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.app-sidebar-meta {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.app-sidebar-logout {
+  width: 100%;
+}
+
+.app-shell-content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.app-shell-error {
+  margin: 24px;
+}
+
+.profile-dl {
+  margin: 0 0 28px;
+  display: grid;
+  gap: 16px;
+}
+
+.profile-dl dt {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.profile-dl dd {
+  margin: 0;
+  font-size: 15px;
+}
+
+.profile-save {
+  width: auto;
+  padding: 10px 20px;
+}
+
+.task-home-project {
+  margin-bottom: 16px;
+}
+
+.task-home-project .muted-note {
+  margin: 0 0 8px;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .app-shell-mobilebar {
+    display: flex;
+  }
+
+  .app-sidebar {
+    display: none;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .app-sidebar.is-open {
+    display: flex;
+  }
+
+  .app-sidebar-brand {
+    display: none;
+  }
 }
 
 /* ============================================================
