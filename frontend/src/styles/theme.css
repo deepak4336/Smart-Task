@@ -819,3 +819,145 @@ a {
   width: auto;
   padding: 10px 14px;
 }
+
+/* ============================================================
+   Tickets
+   ============================================================ */
+.ticket-workspace-select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  min-width: 160px;
+}
+
+.ticket-workspace-note {
+  margin: 0 0 16px;
+}
+
+.ticket-raise-form {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  margin-bottom: 28px;
+}
+
+.ticket-raise-form h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.ticket-raise-form .btn {
+  width: auto;
+  padding: 10px 18px;
+}
+
+.ticket-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ticket-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.ticket-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.ticket-card-desc {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+
+.ticket-raised-by {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.status-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.status-open {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.status-in_progress {
+  background: #f8edd9;
+  color: #8a5a12;
+}
+
+.status-resolved {
+  background: #e7f3ea;
+  color: #2d6a3e;
+}
+
+.status-closed {
+  background: var(--paper);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.ticket-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.ticket-action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ticket-action span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.ticket-action select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .ticket-actions {
+    grid-template-columns: 1fr;
+  }
+}
