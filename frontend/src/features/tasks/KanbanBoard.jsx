@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useWorkspace } from '../workspaces/WorkspaceContext';
 import { api } from '../../lib/api';
 import TaskCard from './TaskCard';
 import TaskModal from './TaskModal';
@@ -13,7 +14,8 @@ const COLUMNS = [
 
 export default function KanbanBoard() {
   const { boardId } = useParams();
-  const { user, accessToken, signOut } = useAuth();
+  const { accessToken } = useAuth();
+  const { setActiveWorkspaceId } = useWorkspace();
 
   const [board, setBoard] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -27,12 +29,13 @@ export default function KanbanBoard() {
     try {
       const data = await api.get(`/boards/${boardId}`, accessToken);
       setBoard(data.board);
+      if (data.board?.workspace_id) setActiveWorkspaceId(data.board.workspace_id);
       return data.board;
     } catch (err) {
       setError(err.message);
       return null;
     }
-  }, [boardId, accessToken]);
+  }, [boardId, accessToken, setActiveWorkspaceId]);
 
   const loadTasks = useCallback(async () => {
     try {
@@ -108,24 +111,11 @@ export default function KanbanBoard() {
 
   return (
     <div>
-      <div className="app-topbar">
-        <Link to="/" className="wordmark">
-          <span className="wordmark-tag" />
-          SmartTask
-        </Link>
-        <div className="user-chip">
-          <span className="user-email">{user?.email}</span>
-          <button className="btn-ghost" onClick={signOut}>
-            Log out
-          </button>
-        </div>
-      </div>
-
       <div className="board-main">
         <div className="board-header">
           <div>
-            <Link to={board?.workspace_id ? `/workspaces/${board.workspace_id}` : '/'} className="back-link">
-              ← Back
+            <Link to="/tasks" className="back-link">
+              ← Boards
             </Link>
             <h2>{board?.name || 'Board'}</h2>
             {board?.project_name && (

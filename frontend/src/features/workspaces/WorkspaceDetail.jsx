@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useWorkspace } from './WorkspaceContext';
 import { api } from '../../lib/api';
 
 export default function WorkspaceDetail() {
   const { workspaceId } = useParams();
-  const { user, accessToken, signOut } = useAuth();
+  const { accessToken } = useAuth();
+  const { setActiveWorkspaceId } = useWorkspace();
 
   const [projects, setProjects] = useState([]);
   const [boardsByProject, setBoardsByProject] = useState({});
@@ -35,6 +37,10 @@ export default function WorkspaceDetail() {
       setSelectedProjectId(list[0].id);
     }
   };
+
+  useEffect(() => {
+    if (workspaceId) setActiveWorkspaceId(workspaceId);
+  }, [workspaceId, setActiveWorkspaceId]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -104,20 +110,6 @@ export default function WorkspaceDetail() {
   };
 
   return (
-    <div>
-      <div className="app-topbar">
-        <Link to="/" className="wordmark">
-          <span className="wordmark-tag" />
-          SmartTask
-        </Link>
-        <div className="user-chip">
-          <span className="user-email">{user?.email}</span>
-          <button className="btn-ghost" onClick={signOut}>
-            Log out
-          </button>
-        </div>
-      </div>
-
       <div className="app-main app-main-wide">
         <Link to="/" className="back-link">
           ← Workspaces
@@ -205,6 +197,5 @@ export default function WorkspaceDetail() {
           </div>
         )}
       </div>
-    </div>
   );
 }
