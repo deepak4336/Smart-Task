@@ -4,6 +4,8 @@ import ProtectedRoute from './features/auth/ProtectedRoute';
 import LoginPage from './features/auth/LoginPage';
 import SignupPage from './features/auth/SignupPage';
 import WorkspaceDashboard from './features/workspaces/WorkspaceDashboard';
+import WorkspaceDetail from './features/workspaces/WorkspaceDetail';
+import KanbanBoard from './features/tasks/KanbanBoard';
 
 export default function App() {
   return (
@@ -17,6 +19,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <WorkspaceDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workspaces/:workspaceId"
+            element={
+              <ProtectedRoute>
+                <WorkspaceDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/boards/:boardId"
+            element={
+              <ProtectedRoute>
+                <KanbanBoard />
               </ProtectedRoute>
             }
           />

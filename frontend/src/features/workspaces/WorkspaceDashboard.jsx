@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../../lib/api';
 
@@ -75,8 +76,10 @@ export default function WorkspaceDashboard() {
         ) : (
           <ul className="workspace-list">
             {workspaces.map((ws) => (
-              <li key={ws.id} className="workspace-row">
-                {ws.name}
+              <li key={ws.id}>
+                <Link to={`/workspaces/${ws.id}`} className="workspace-row workspace-row-link">
+                  {ws.name}
+                </Link>
               </li>
             ))}
           </ul>

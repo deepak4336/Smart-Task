@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { supabase } from './config/supabaseClient.js';
 import workspaceRoutes from './routes/workspaces.js';
+import boardRoutes from './routes/boards.js';
+import taskRoutes from './routes/tasks.js';
 
 dotenv.config();
 
@@ -29,7 +31,8 @@ app.get('/api/health', async (req, res) => {
 
 // Route mounts (add as each module is built)
 app.use('/api/workspaces', workspaceRoutes);
-// app.use('/api/tasks', taskRoutes);
+app.use('/api/boards', boardRoutes);
+app.use('/api/tasks', taskRoutes);
 // app.use('/api/dependencies', dependencyRoutes);
 // app.use('/api/extract-tasks', extractRoutes);
 
