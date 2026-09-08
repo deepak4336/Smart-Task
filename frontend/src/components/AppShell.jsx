@@ -13,7 +13,7 @@ const NAV_ITEMS = [
     roles: ['admin', 'manager', 'member'],
   },
   { to: '/tickets', label: 'Tickets', roles: ['admin', 'manager', 'member'] },
-  { to: '/reports', label: 'Reports', roles: ['admin', 'manager'] },
+  { to: '/reports', label: 'Reports', roles: ['admin', 'manager', 'member'] },
   { to: '/profile', label: 'Profile', roles: ['admin', 'manager', 'member'] },
 ];
 
