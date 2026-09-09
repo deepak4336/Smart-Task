@@ -1126,3 +1126,50 @@ a {
     grid-column: 1 / -1;
   }
 }
+
+/* ============================================================
+   Workload dashboard
+   ============================================================ */
+.workload-bar-row {
+  grid-template-columns: minmax(120px, 200px) 1fr auto;
+  align-items: center;
+}
+
+.workload-bar-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.workload-bar-role {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.workload-effort-figure {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  margin: 8px 0 4px;
+}
+
+.workload-workspaces {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.workload-workspaces h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+@media (max-width: 720px) {
+  .workload-bar-row {
+    grid-template-columns: 1fr auto;
+  }
+}
