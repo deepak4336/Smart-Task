@@ -5,6 +5,7 @@ import { useWorkspace } from '../workspaces/WorkspaceContext';
 import { api } from '../../lib/api';
 import TaskCard from './TaskCard';
 import TaskModal from './TaskModal';
+import ExtractTasksModal from './ExtractTasksModal';
 
 const COLUMNS = [
   { id: 'todo', label: 'To Do' },
@@ -23,6 +24,7 @@ export default function KanbanBoard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modal, setModal] = useState({ open: false, mode: 'create', task: null });
+  const [extractOpen, setExtractOpen] = useState(false);
   const [dragOverCol, setDragOverCol] = useState(null);
 
   const loadBoard = useCallback(async () => {
@@ -122,9 +124,14 @@ export default function KanbanBoard() {
               <p className="board-subtitle">{board.project_name}</p>
             )}
           </div>
-          <button type="button" className="btn btn-primary" onClick={openCreate}>
-            New task
-          </button>
+          <div className="board-header-actions">
+            <button type="button" className="btn-ghost" onClick={() => setExtractOpen(true)}>
+              Extract from notes
+            </button>
+            <button type="button" className="btn btn-primary" onClick={openCreate}>
+              New task
+            </button>
+          </div>
         </div>
 
         {error && <div className="form-error">{error}</div>}
@@ -174,6 +181,15 @@ export default function KanbanBoard() {
         onClose={closeModal}
         onSaved={refresh}
         onDeleted={refresh}
+      />
+
+      <ExtractTasksModal
+        open={extractOpen}
+        boardId={boardId}
+        members={members}
+        accessToken={accessToken}
+        onClose={() => setExtractOpen(false)}
+        onSaved={refresh}
       />
     </div>
   );
