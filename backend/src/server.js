@@ -9,6 +9,7 @@ import taskRoutes from './routes/tasks.js';
 import ticketRoutes from './routes/tickets.js';
 import reportRoutes from './routes/reports.js';
 import workloadRoutes from './routes/workload.js';
+import extractRoutes from './routes/extract.js';
 
 dotenv.config();
 
@@ -41,8 +42,8 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/workload', workloadRoutes);
+app.use('/api/extract-tasks', extractRoutes);
 // app.use('/api/dependencies', dependencyRoutes);
-// app.use('/api/extract-tasks', extractRoutes);
 
 app.listen(PORT, () => {
   console.log(`SmartTask backend running on http://localhost:${PORT}`);

@@ -570,9 +570,17 @@ a {
   margin: 0;
 }
 
-.board-header .btn {
+.board-header .btn,
+.board-header .btn-ghost {
   width: auto;
   padding: 10px 18px;
+  flex-shrink: 0;
+}
+
+.board-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -813,6 +821,67 @@ a {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.extract-panel {
+  max-width: 520px;
+}
+
+.extract-lead {
+  font-size: 13px;
+  color: var(--muted);
+  margin: -8px 0 16px;
+  line-height: 1.45;
+}
+
+.extract-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.extract-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  background: var(--paper);
+}
+
+.extract-item.is-unchecked {
+  opacity: 0.55;
+}
+
+.extract-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.extract-check input {
+  accent-color: var(--primary);
+}
+
+.extract-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.extract-actions {
+  align-items: center;
+}
+
+.extract-actions .btn-ghost {
+  width: auto;
+  padding: 10px 14px;
 }
 
 .comment-form .btn {
