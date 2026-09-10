@@ -10,11 +10,19 @@ const emptyForm = {
   dueDate: '',
 };
 
+const STATUS_LABEL = { todo: 'To Do', in_progress: 'In Progress', done: 'Done' };
+
+function formatDue(value) {
+  if (!value) return 'No due date';
+  return String(value).slice(0, 10);
+}
+
 export default function TaskModal({
   open,
   mode, // 'create' | 'edit'
   boardId,
   task,
+  boardTasks = [],
   members,
   accessToken,
   onClose,
@@ -26,11 +34,18 @@ export default function TaskModal({
   const [commentText, setCommentText] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [cascadeNotice, setCascadeNotice] = useState(null);
+  const [dependencies, setDependencies] = useState([]);
+  const [dependents, setDependents] = useState([]);
+  const [depQuery, setDepQuery] = useState('');
+  const [linking, setLinking] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setError('');
     setCommentText('');
+    setCascadeNotice(null);
+    setDepQuery('');
 
     if (mode === 'edit' && task) {
       setForm({
@@ -39,12 +54,15 @@ export default function TaskModal({
         status: task.status || 'todo',
         priority: task.priority || 'medium',
         assigneeId: task.assignee_id || task.assignee?.id || '',
-        dueDate: task.due_date || '',
+        dueDate: task.due_date ? String(task.due_date).slice(0, 10) : '',
       });
       loadComments(task.id);
+      loadDependencies(task.id);
     } else {
       setForm(emptyForm);
       setComments([]);
+      setDependencies([]);
+      setDependents([]);
     }
   }, [open, mode, task]);
 
@@ -52,6 +70,16 @@ export default function TaskModal({
     try {
       const data = await api.get(`/tasks/${taskId}/comments`, accessToken);
       setComments(data.comments || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const loadDependencies = async (taskId) => {
+    try {
+      const data = await api.get(`/tasks/${taskId}/dependencies`, accessToken);
+      setDependencies(data.dependencies || []);
+      setDependents(data.dependents || []);
     } catch (err) {
       setError(err.message);
     }
@@ -76,12 +104,19 @@ export default function TaskModal({
 
     try {
       if (mode === 'create') {
-        await api.post('/tasks', { boardId, ...payload }, accessToken);
+        const data = await api.post('/tasks', { boardId, ...payload }, accessToken);
+        onSaved(data);
+        onClose();
       } else {
-        await api.patch(`/tasks/${task.id}`, payload, accessToken);
+        const data = await api.patch(`/tasks/${task.id}`, payload, accessToken);
+        const shifted = data.rescheduled || [];
+        onSaved(data);
+        if (shifted.length > 0) {
+          setCascadeNotice(shifted);
+        } else {
+          onClose();
+        }
       }
-      onSaved();
-      onClose();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -100,6 +135,44 @@ export default function TaskModal({
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const linkedPredecessorIds = new Set(dependencies.map((d) => d.depends_on_id));
+  const candidateTasks = boardTasks.filter((t) => {
+    if (!task || t.id === task.id) return false;
+    if (linkedPredecessorIds.has(t.id)) return false;
+    const q = depQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (t.title || '').toLowerCase().includes(q);
+  });
+
+  const handleLinkDependency = async (dependsOnId) => {
+    if (!task || !dependsOnId) return;
+    setLinking(true);
+    setError('');
+    try {
+      await api.post(`/tasks/${task.id}/dependencies`, { dependsOnId }, accessToken);
+      setDepQuery('');
+      await loadDependencies(task.id);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLinking(false);
+    }
+  };
+
+  const handleRemoveDependency = async (linkId) => {
+    if (!task) return;
+    setLinking(true);
+    setError('');
+    try {
+      await api.delete(`/tasks/${task.id}/dependencies/${linkId}`, accessToken);
+      await loadDependencies(task.id);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLinking(false);
     }
   };
 
@@ -128,6 +201,25 @@ export default function TaskModal({
         </div>
 
         {error && <div className="form-error">{error}</div>}
+        {cascadeNotice && cascadeNotice.length > 0 && (
+          <div className="form-info cascade-notice" role="status">
+            <strong>
+              {cascadeNotice.length} dependent {cascadeNotice.length === 1 ? 'task was' : 'tasks were'} also
+              rescheduled
+            </strong>
+            <p>
+              This task&apos;s due date moved later, so dependent tasks that would now overlap or
+              finish too early were shifted by the same number of days.
+            </p>
+            <ul>
+              {cascadeNotice.map((item) => (
+                <li key={item.id}>
+                  {item.title}: {item.previousDueDate} → {item.newDueDate}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="field">
@@ -222,6 +314,105 @@ export default function TaskModal({
             </button>
           </div>
         </form>
+
+        {mode === 'edit' && task && (
+          <div className="comments-section">
+            <h4>Depends on</h4>
+            <p className="comments-empty">
+              This task waits on the tasks below. Delaying a predecessor can push dependent dates
+              forward.
+            </p>
+            {dependencies.length === 0 ? (
+              <p className="comments-empty">No dependencies yet.</p>
+            ) : (
+              <ul className="dep-list">
+                {dependencies.map((link) => (
+                  <li key={link.id} className="dep-item">
+                    <div>
+                      <div className="dep-title">{link.depends_on?.title || 'Task'}</div>
+                      <div className="dep-meta">
+                        {STATUS_LABEL[link.depends_on?.status] || link.depends_on?.status} ·{' '}
+                        {formatDue(link.depends_on?.due_date)}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-ghost dep-remove"
+                      onClick={() => handleRemoveDependency(link.id)}
+                      disabled={linking}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <label className="field-label-inline" htmlFor="dep-search">
+              Add a dependency
+            </label>
+            <input
+              id="dep-search"
+              type="search"
+              placeholder="Search tasks on this board…"
+              value={depQuery}
+              onChange={(e) => setDepQuery(e.target.value)}
+              disabled={linking}
+            />
+            {candidateTasks.length === 0 ? (
+              <p className="comments-empty">
+                {boardTasks.length <= 1
+                  ? 'Add another task on this board to link a dependency.'
+                  : depQuery
+                    ? 'No matching tasks.'
+                    : 'All other tasks on this board are already linked.'}
+              </p>
+            ) : (
+              <ul className="dep-picker">
+                {candidateTasks.slice(0, 8).map((t) => (
+                  <li key={t.id}>
+                    <button
+                      type="button"
+                      className="dep-picker-btn"
+                      disabled={linking}
+                      onClick={() => handleLinkDependency(t.id)}
+                    >
+                      <span>{t.title}</span>
+                      <span className="dep-meta">{formatDue(t.due_date)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <h4 className="dep-subhead">Blocked by this task</h4>
+            {dependents.length === 0 ? (
+              <p className="comments-empty">Nothing depends on this task.</p>
+            ) : (
+              <ul className="dep-list">
+                {dependents.map((link) => (
+                  <li key={link.id} className="dep-item">
+                    <div>
+                      <div className="dep-title">{link.dependent?.title || 'Task'}</div>
+                      <div className="dep-meta">
+                        {STATUS_LABEL[link.dependent?.status] || link.dependent?.status} ·{' '}
+                        {formatDue(link.dependent?.due_date)}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-ghost dep-remove"
+                      onClick={() => handleRemoveDependency(link.id)}
+                      disabled={linking}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {mode === 'edit' && task && (
           <div className="comments-section">

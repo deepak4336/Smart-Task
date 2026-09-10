@@ -9,6 +9,11 @@ import {
   listComments,
   addComment,
 } from '../controllers/taskController.js';
+import {
+  listDependencies,
+  createDependency,
+  deleteDependency,
+} from '../controllers/dependencyController.js';
 
 const router = Router();
 
@@ -22,5 +27,9 @@ router.delete('/:taskId', deleteTask);
 
 router.get('/:taskId/comments', listComments);
 router.post('/:taskId/comments', addComment);
+
+router.get('/:taskId/dependencies', listDependencies);
+router.post('/:taskId/dependencies', createDependency);
+router.delete('/:taskId/dependencies/:dependencyId', deleteDependency);
 
 export default router;

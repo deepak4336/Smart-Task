@@ -51,6 +51,22 @@ async function assertBoardAccess(userId, boardId) {
   return { board, membership, workspaceId };
 }
 
+/** Resolve task → board → workspace and confirm membership. */
+async function assertTaskAccess(userId, taskId) {
+  const { data: task, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('id', taskId)
+    .single();
+
+  if (error || !task) return { error: { status: 404, message: 'Task not found' } };
+
+  const boardAccess = await assertBoardAccess(userId, task.board_id);
+  if (boardAccess.error) return { error: boardAccess.error };
+
+  return { task, ...boardAccess };
+}
+
 export async function listBoards(req, res) {
   const { projectId } = req.query;
   if (!projectId) return res.status(400).json({ error: 'projectId query param is required' });
@@ -136,5 +152,5 @@ export async function deleteBoard(req, res) {
   res.json({ message: 'Board deleted' });
 }
 
-// Exported for taskController membership checks via board id
-export { assertBoardAccess };
+// Exported for task/dependency controllers
+export { assertBoardAccess, assertTaskAccess };
