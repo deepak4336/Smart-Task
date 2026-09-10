@@ -1,23 +1,9 @@
 import { supabase } from '../config/supabaseClient.js';
-import { assertBoardAccess } from './boardController.js';
+import { assertBoardAccess, assertTaskAccess } from './boardController.js';
+import { cascadeDependentDueDates } from './dependencyController.js';
 
 const ALLOWED_STATUSES = ['todo', 'in_progress', 'done'];
 const ALLOWED_PRIORITIES = ['low', 'medium', 'high'];
-
-async function assertTaskAccess(userId, taskId) {
-  const { data: task, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('id', taskId)
-    .single();
-
-  if (error || !task) return { error: { status: 404, message: 'Task not found' } };
-
-  const boardAccess = await assertBoardAccess(userId, task.board_id);
-  if (boardAccess.error) return { error: boardAccess.error };
-
-  return { task, ...boardAccess };
-}
 
 export async function listTasks(req, res) {
   const { boardId } = req.query;
@@ -127,6 +113,8 @@ export async function updateTask(req, res) {
   if (dueDate !== undefined) updates.due_date = dueDate || null;
   if (estimatedHours !== undefined) updates.estimated_hours = estimatedHours;
 
+  const previousDueDate = access.task.due_date;
+
   const { data: task, error } = await supabase
     .from('tasks')
     .update(updates)
@@ -135,7 +123,21 @@ export async function updateTask(req, res) {
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ task });
+
+  let rescheduled = [];
+  if (dueDate !== undefined && previousDueDate && task.due_date) {
+    const prev = String(previousDueDate).slice(0, 10);
+    const next = String(task.due_date).slice(0, 10);
+    if (next > prev) {
+      try {
+        rescheduled = await cascadeDependentDueDates(task, prev, next);
+      } catch (cascadeError) {
+        return res.status(500).json({ error: cascadeError.message });
+      }
+    }
+  }
+
+  res.json({ task, rescheduled });
 }
 
 export async function deleteTask(req, res) {

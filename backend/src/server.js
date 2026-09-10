@@ -43,7 +43,6 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/workload', workloadRoutes);
 app.use('/api/extract-tasks', extractRoutes);
-// app.use('/api/dependencies', dependencyRoutes);
 
 app.listen(PORT, () => {
   console.log(`SmartTask backend running on http://localhost:${PORT}`);

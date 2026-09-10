@@ -26,6 +26,7 @@ export default function KanbanBoard() {
   const [modal, setModal] = useState({ open: false, mode: 'create', task: null });
   const [extractOpen, setExtractOpen] = useState(false);
   const [dragOverCol, setDragOverCol] = useState(null);
+  const [cascadeNotice, setCascadeNotice] = useState(null);
 
   const loadBoard = useCallback(async () => {
     try {
@@ -74,6 +75,13 @@ export default function KanbanBoard() {
 
   const refresh = async () => {
     await loadTasks();
+  };
+
+  const handleTaskSaved = async (result) => {
+    await refresh();
+    if (result?.rescheduled?.length) {
+      setCascadeNotice(result.rescheduled);
+    }
   };
 
   const handleDragStart = (e, task) => {
@@ -135,6 +143,28 @@ export default function KanbanBoard() {
         </div>
 
         {error && <div className="form-error">{error}</div>}
+        {cascadeNotice && cascadeNotice.length > 0 && (
+          <div className="form-info cascade-notice board-cascade-notice" role="status">
+            <strong>
+              {cascadeNotice.length} dependent {cascadeNotice.length === 1 ? 'task was' : 'tasks were'} also
+              rescheduled
+            </strong>
+            <p>
+              A predecessor moved later, so overlapping dependents were shifted by the same number of
+              days.
+            </p>
+            <ul>
+              {cascadeNotice.map((item) => (
+                <li key={item.id}>
+                  {item.title}: {item.previousDueDate} → {item.newDueDate}
+                </li>
+              ))}
+            </ul>
+            <button type="button" className="btn-ghost" onClick={() => setCascadeNotice(null)}>
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <p className="loading-state">Loading board…</p>
@@ -176,10 +206,11 @@ export default function KanbanBoard() {
         mode={modal.mode}
         boardId={boardId}
         task={modal.task}
+        boardTasks={tasks}
         members={members}
         accessToken={accessToken}
         onClose={closeModal}
-        onSaved={refresh}
+        onSaved={handleTaskSaved}
         onDeleted={refresh}
       />
 
