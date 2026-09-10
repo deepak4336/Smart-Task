@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { useWorkspace } from '../features/workspaces/WorkspaceContext';
 import { displayRole, navVisibleForRole } from '../lib/roles';
+import NotificationBell from '../features/notifications/NotificationBell';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', end: true, roles: ['admin', 'manager', 'member'] },
@@ -42,15 +43,18 @@ export default function AppShell() {
           <span className="wordmark-tag" />
           SmartTask
         </span>
-        <button
-          type="button"
-          className="btn-ghost"
-          aria-expanded={mobileNavOpen}
-          aria-controls="app-sidebar"
-          onClick={() => setMobileNavOpen((open) => !open)}
-        >
-          {mobileNavOpen ? 'Close' : 'Menu'}
-        </button>
+        <div className="app-shell-mobilebar-actions">
+          <NotificationBell />
+          <button
+            type="button"
+            className="btn-ghost"
+            aria-expanded={mobileNavOpen}
+            aria-controls="app-sidebar"
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            {mobileNavOpen ? 'Close' : 'Menu'}
+          </button>
+        </div>
       </header>
 
       <aside
@@ -80,6 +84,9 @@ export default function AppShell() {
         </nav>
 
         <div className="app-sidebar-footer">
+          <div className="app-sidebar-bell">
+            <NotificationBell />
+          </div>
           <p className="app-sidebar-name">{profile?.name || 'Account'}</p>
           <p className="app-sidebar-meta">{displayRole(workspaceRole)}</p>
           <button type="button" className="btn-ghost app-sidebar-logout" onClick={signOut}>

@@ -1,6 +1,7 @@
 import { supabase } from '../config/supabaseClient.js';
 import { assertBoardAccess, assertTaskAccess } from './boardController.js';
 import { cascadeDependentDueDates } from './dependencyController.js';
+import { createNotification } from './notificationController.js';
 
 const ALLOWED_STATUSES = ['todo', 'in_progress', 'done'];
 const ALLOWED_PRIORITIES = ['low', 'medium', 'high'];
@@ -62,6 +63,16 @@ export async function createTask(req, res) {
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
+
+  if (task.assignee_id && task.assignee_id !== req.user.id) {
+    await createNotification({
+      userId: task.assignee_id,
+      type: 'assigned',
+      message: `You were assigned to "${task.title}"`,
+      taskId: task.id,
+    });
+  }
+
   res.status(201).json({ task });
 }
 
@@ -114,6 +125,7 @@ export async function updateTask(req, res) {
   if (estimatedHours !== undefined) updates.estimated_hours = estimatedHours;
 
   const previousDueDate = access.task.due_date;
+  const previousAssigneeId = access.task.assignee_id;
 
   const { data: task, error } = await supabase
     .from('tasks')
@@ -123,6 +135,20 @@ export async function updateTask(req, res) {
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
+
+  if (
+    assigneeId !== undefined &&
+    task.assignee_id &&
+    task.assignee_id !== previousAssigneeId &&
+    task.assignee_id !== req.user.id
+  ) {
+    await createNotification({
+      userId: task.assignee_id,
+      type: 'assigned',
+      message: `You were assigned to "${task.title}"`,
+      taskId: task.id,
+    });
+  }
 
   let rescheduled = [];
   if (dueDate !== undefined && previousDueDate && task.due_date) {
@@ -184,5 +210,17 @@ export async function addComment(req, res) {
     .single();
 
   if (error) return res.status(500).json({ error: error.message });
+
+  const assigneeId = access.task.assignee_id;
+  if (assigneeId && assigneeId !== req.user.id) {
+    const authorName = comment.author?.name || 'Someone';
+    await createNotification({
+      userId: assigneeId,
+      type: 'comment',
+      message: `${authorName} commented on "${access.task.title}"`,
+      taskId,
+    });
+  }
+
   res.status(201).json({ comment });
 }

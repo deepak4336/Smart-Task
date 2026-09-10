@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabaseClient.js';
 import { assertTaskAccess } from './boardController.js';
+import { createNotification } from './notificationController.js';
 
 const MAX_CASCADE_DEPTH = 10;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -88,7 +89,7 @@ export async function cascadeDependentDueDates(predecessor, previousDueDate, nex
 
     const { data: dependents, error: taskError } = await supabase
       .from('tasks')
-      .select('id, title, due_date')
+      .select('id, title, due_date, assignee_id')
       .in('id', ids);
 
     if (taskError) throw taskError;
@@ -118,6 +119,16 @@ export async function cascadeDependentDueDates(predecessor, previousDueDate, nex
         becauseOfTaskId: predId,
         shiftedByDays: shiftDays,
       });
+
+      if (dep.assignee_id) {
+        const newDueLabel = dateOnly(updated.due_date);
+        await createNotification({
+          userId: dep.assignee_id,
+          type: 'dependency_shift',
+          message: `Due date for "${updated.title}" moved from ${depDue} to ${newDueLabel} because a predecessor was delayed.`,
+          taskId: updated.id,
+        });
+      }
 
       await walk(dep.id, newDue, depth + 1);
     }
