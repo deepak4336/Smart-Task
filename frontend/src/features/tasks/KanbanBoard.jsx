@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useWorkspace } from '../workspaces/WorkspaceContext';
 import { api } from '../../lib/api';
@@ -15,6 +15,7 @@ const COLUMNS = [
 
 export default function KanbanBoard() {
   const { boardId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { accessToken } = useAuth();
   const { setActiveWorkspaceId } = useWorkspace();
 
@@ -72,6 +73,18 @@ export default function KanbanBoard() {
       setLoading(false);
     })();
   }, [accessToken, loadBoard, loadTasks, loadMembers]);
+
+  useEffect(() => {
+    const openTaskId = searchParams.get('task');
+    if (!openTaskId || loading) return;
+    const task = tasks.find((t) => t.id === openTaskId);
+    if (task) {
+      setModal({ open: true, mode: 'edit', task });
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete('task');
+    setSearchParams(next, { replace: true });
+  }, [loading, searchParams, setSearchParams, tasks]);
 
   const refresh = async () => {
     await loadTasks();

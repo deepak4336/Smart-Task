@@ -85,6 +85,7 @@ create table comments (
 create table notifications (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references users(id) on delete cascade,
+  task_id uuid references tasks(id) on delete cascade,
   type text not null check (type in ('due_soon', 'overdue', 'dependency_shift', 'assigned', 'comment')),
   message text not null,
   is_read boolean default false,
